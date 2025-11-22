@@ -55,6 +55,9 @@ pluginCapabilities:
 
     # Uncomment the following line if the plugin sends keyboard shortcuts to the target application.
     #- ActivatesApplication
+    
+    # Enable haptic feedback support for MX Master 4 mouse
+    - HasHapticMapping
 
 # Minimum Loupedeck version supported by the plugin.
 minimumLoupedeckVersion: 6.0
