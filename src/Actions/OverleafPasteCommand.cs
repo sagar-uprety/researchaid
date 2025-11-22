@@ -34,7 +34,29 @@ namespace Loupedeck.ResearchAidPlugin
                     return;
                 }
 
-                var ok = this.TryNavigateAndPaste(cfg, clipboard);
+                // Try to extract DOI and fetch BibTeX
+                var textToPaste = clipboard;
+                var doi = CitationCommand.ExtractDoi(clipboard);
+                if (doi != null)
+                {
+                    PluginLog.Info($"OverleafPasteCommand: found DOI {doi}, fetching BibTeX...");
+                    var bibtex = CitationCommand.FetchBibtexForDoi(doi);
+                    if (!String.IsNullOrWhiteSpace(bibtex))
+                    {
+                        PluginLog.Info("OverleafPasteCommand: BibTeX fetched successfully");
+                        textToPaste = CitationCommand.FormatBibtex(bibtex);
+                    }
+                    else
+                    {
+                        PluginLog.Warning($"OverleafPasteCommand: could not fetch BibTeX for {doi}, using original clipboard");
+                    }
+                }
+                else
+                {
+                    PluginLog.Info("OverleafPasteCommand: no DOI found, using clipboard as-is");
+                }
+
+                var ok = this.TryNavigateAndPaste(cfg, textToPaste);
                 PluginLog.Info($"OverleafPasteCommand: paste {(ok ? "succeeded" : "failed")}");
             }
             catch (Exception ex)

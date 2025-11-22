@@ -28,7 +28,7 @@ namespace Loupedeck.ResearchAidPlugin
                     return;
                 }
 
-                var doi = this.ExtractDoi(clipboard);
+                var doi = CitationCommand.ExtractDoi(clipboard);
                 if (doi == null)
                 {
                     PluginLog.Info("CitationCommand: no DOI found in clipboard text");
@@ -37,14 +37,15 @@ namespace Loupedeck.ResearchAidPlugin
 
                 PluginLog.Info($"CitationCommand: found DOI {doi}");
 
-                var bibtex = this.FetchBibtexForDoi(doi);
+                var bibtex = CitationCommand.FetchBibtexForDoi(doi);
                 if (String.IsNullOrWhiteSpace(bibtex))
                 {
                     PluginLog.Warning($"CitationCommand: could not fetch BibTeX for {doi}");
                     return;
                 }
 
-                this.WriteClipboard(bibtex);
+                var formatted = CitationCommand.FormatBibtex(bibtex);
+                this.WriteClipboard(formatted);
                 PluginLog.Info("CitationCommand: BibTeX copied to clipboard");
             }
             catch (Exception ex)
@@ -97,7 +98,7 @@ namespace Loupedeck.ResearchAidPlugin
             }
         }
 
-        private String ExtractDoi(String input)
+        public static String ExtractDoi(String input)
         {
             if (String.IsNullOrWhiteSpace(input))
             {
@@ -109,27 +110,27 @@ namespace Loupedeck.ResearchAidPlugin
             var doiFromUrl = Regex.Match(input, @"doi\.org\/(10\.\d{4,9}\/\S+)", RegexOptions.IgnoreCase);
             if (doiFromUrl.Success)
             {
-                return this.CleanDoi(doiFromUrl.Groups[1].Value);
+                return CleanDoi(doiFromUrl.Groups[1].Value);
             }
 
             // 2) bare DOI like 10.1000/xyz123
             var doiMatch = Regex.Match(input, @"(10\.\d{4,9}\/\S+)", RegexOptions.IgnoreCase);
             if (doiMatch.Success)
             {
-                return this.CleanDoi(doiMatch.Groups[1].Value);
+                return CleanDoi(doiMatch.Groups[1].Value);
             }
 
             return null;
         }
 
-        private String CleanDoi(String doi)
+        public static String CleanDoi(String doi)
         {
             if (String.IsNullOrWhiteSpace(doi)) return doi;
             // Trim punctuation commonly attached to DOIs
             return doi.Trim().TrimEnd('.', ',', ';', '\'', '"', ')', ']');
         }
 
-        private String FetchBibtexForDoi(String doi)
+        public static String FetchBibtexForDoi(String doi)
         {
             try
             {
@@ -152,6 +153,20 @@ namespace Loupedeck.ResearchAidPlugin
                 PluginLog.Error(ex, "CitationCommand: error fetching BibTeX");
                 return null;
             }
+        }
+
+        public static String FormatBibtex(String bibtex)
+        {
+            if (String.IsNullOrWhiteSpace(bibtex))
+            {
+                return bibtex;
+            }
+
+            // Replace ", " with ",\n  " to add newline after each field
+            // This makes BibTeX entries more readable
+            var formatted = Regex.Replace(bibtex, @",\s*", ",\n  ");
+            
+            return "\n" + formatted;
         }
     }
 }
