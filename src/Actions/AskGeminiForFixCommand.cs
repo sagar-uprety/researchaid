@@ -345,38 +345,52 @@ end tell";
             return 'No errors found in logs panel. Your document may have compiled successfully!';
         }
         
-        for (var i = 0; i < errorHeaders.length && i < 3; i++) {
+        // Extract ALL errors (no limit)
+        for (var i = 0; i < errorHeaders.length; i++) {
             var header = errorHeaders[i];
             var errorEntry = header.closest ? header.closest('.log-entry') : header;
             
             var errorText = '=== ERROR ' + (i + 1) + ' ===\n';
             
-            // Get error title/message
-            var title = header.querySelector('.log-entry-header-title, .log-entry-content-raw-container');
-            if (!title) {
-                // Try to get text directly from header
-                title = header;
-            }
-            
+            // Get error title/message - be more specific to avoid UI elements
+            var title = header.querySelector('.log-entry-header-title');
             if (title) {
                 var titleText = title.textContent || title.innerText || '';
-                errorText += 'Error: ' + titleText.trim().substring(0, 300) + '\n';
+                // Clean up: remove button text and UI noise
+                titleText = titleText.replace(/You have \d+ free suggestion.*?$/gi, '').trim();
+                errorText += 'Error: ' + titleText.substring(0, 300) + '\n';
             }
             
             // Get file location and line number
-            var location = header.querySelector('.log-entry-header-link-location, [class*=""location""]');
+            var location = header.querySelector('.log-entry-header-link-location');
             if (location) {
                 errorText += 'Location: ' + location.textContent.trim() + '\n';
             }
             
-            // Get detailed error content
+            // Get detailed error content from raw content only (avoid UI elements)
             if (errorEntry) {
-                var contentAreas = errorEntry.querySelectorAll('.log-entry-content, .log-entry-content-raw-container, pre');
-                for (var j = 0; j < contentAreas.length; j++) {
-                    var content = contentAreas[j].textContent || contentAreas[j].innerText || '';
-                    if (content && content.trim().length > 10) {
-                        errorText += '\nDetails:\n' + content.trim().substring(0, 500) + '\n';
-                        break;
+                // Look specifically for raw content containers, NOT AI assistant sections
+                var rawContent = errorEntry.querySelector('.log-entry-content-raw-container');
+                if (rawContent) {
+                    // Clone the element to manipulate it
+                    var contentClone = rawContent.cloneNode(true);
+                    
+                    // Remove AI assistant elements
+                    var aiElements = contentClone.querySelectorAll('.ai-error-assistant-header, .ai-error-assistant, button, .premium-suggestion-indicator');
+                    for (var k = 0; k < aiElements.length; k++) {
+                        aiElements[k].remove();
+                    }
+                    
+                    var cleanContent = contentClone.textContent || contentClone.innerText || '';
+                    cleanContent = cleanContent.trim();
+                    
+                    if (cleanContent.length > 10) {
+                        // Remove common UI noise patterns
+                        cleanContent = cleanContent.replace(/You have \d+ free suggestion.*?Suggest fix/gi, '');
+                        cleanContent = cleanContent.replace(/Suggest fix/gi, '');
+                        cleanContent = cleanContent.trim();
+                        
+                        errorText += '\nDetails:\n' + cleanContent.substring(0, 1000) + '\n';
                     }
                 }
             }
