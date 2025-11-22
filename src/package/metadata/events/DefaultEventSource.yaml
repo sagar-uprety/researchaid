@@ -1,0 +1,11 @@
+displayName: ResearchAid
+description: Events for research workflow automation
+iconFile: DefaultEventSource.svg
+
+events:
+    - name: overleaf_layout_switch
+      displayName: Overleaf Layout Switch
+      description: Triggered when switching between Overleaf layout modes
+    - name: overleaf_layout_reset
+      displayName: Overleaf Layout Reset
+      description: Triggered when resetting Overleaf layout to default

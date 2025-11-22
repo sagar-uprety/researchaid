@@ -1,0 +1,7 @@
+haptics:
+    overleaf_layout_switch:
+        DEFAULT: damp_state_change
+        MX Master 4: sharp_state_change
+    overleaf_layout_reset:
+        DEFAULT: completed
+        MX Master 4: completed
