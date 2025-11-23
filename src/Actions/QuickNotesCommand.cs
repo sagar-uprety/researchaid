@@ -12,6 +12,32 @@ namespace Loupedeck.ResearchAidPlugin
         {
         }
 
+        protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
+        {
+            try
+            {
+                var resourceName = PluginResources.FindFile("IconQuickNotesCommand.png");
+                var iconImage = PluginResources.ReadImage(resourceName);
+                
+                if (iconImage != null)
+                {
+                    using (var bitmapBuilder = new BitmapBuilder(imageSize))
+                    {
+                        bitmapBuilder.Clear(BitmapColor.Black);
+                        bitmapBuilder.DrawImage(iconImage);
+                        return bitmapBuilder.ToImage();
+                    }
+                }
+                
+                return null;
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error($"QuickNotesCommand: Failed to load icon - {ex.Message}");
+                return null;
+            }
+        }
+
         protected override void RunCommand(String actionParameter)
         {
             try
@@ -43,14 +69,11 @@ namespace Loupedeck.ResearchAidPlugin
                 var formattedNote = this.FormatNoteWithContext(clipboard, metadata);
 
                 // Switch to Overleaf tab
-                if (!this.SwitchToOverleafTab())
+                if (!ChromeTabHelper.SwitchToTabByUrl("overleaf.com", 500))
                 {
                     PluginLog.Warning("QuickNotesCommand: failed to find Overleaf tab");
                     return;
                 }
-
-                // Wait for tab to activate
-                Thread.Sleep(500);
 
                 // Open notes.tex file
                 if (!this.OpenNotesFile())
@@ -332,81 +355,6 @@ end tell";
             catch (Exception ex)
             {
                 PluginLog.Error(ex, "QuickNotesCommand: failed to copy selection");
-                return false;
-            }
-        }
-
-        private bool SwitchToOverleafTab()
-        {
-            try
-            {
-                PluginLog.Info("QuickNotesCommand: Starting tab switch to Overleaf...");
-
-                using var proc = new Process();
-                proc.StartInfo.FileName = "/usr/bin/osascript";
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.RedirectStandardError = true;
-                proc.StartInfo.CreateNoWindow = true;
-
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("tell application \"Google Chrome\"");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("set windowList to every window");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("repeat with i from 1 to count of windowList");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("set aWindow to item i of windowList");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("set tabList to every tab of aWindow");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("repeat with j from 1 to count of tabList");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("set atab to item j of tabList");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("set tabUrl to URL of atab");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("if tabUrl contains \"overleaf.com\" then");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("set active tab index of aWindow to j");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("set index of aWindow to 1");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("activate");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("return true");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("end if");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("end repeat");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("end repeat");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("return false");
-                proc.StartInfo.ArgumentList.Add("-e");
-                proc.StartInfo.ArgumentList.Add("end tell");
-
-                proc.Start();
-                var output = proc.StandardOutput.ReadToEnd();
-                var stderr = proc.StandardError.ReadToEnd();
-                proc.WaitForExit();
-
-                PluginLog.Info($"QuickNotesCommand: AppleScript exit code: {proc.ExitCode}");
-                PluginLog.Info($"QuickNotesCommand: AppleScript output: '{output}'");
-
-                if (proc.ExitCode != 0)
-                {
-                    PluginLog.Warning($"QuickNotesCommand: SwitchToOverleafTab failed, stderr: {stderr}");
-                    return false;
-                }
-
-                var result = output.Trim().ToLower() == "true";
-                PluginLog.Info($"QuickNotesCommand: SwitchToOverleafTab result: {result}");
-                return result;
-            }
-            catch (Exception ex)
-            {
-                PluginLog.Error(ex, "QuickNotesCommand: failed to switch to Overleaf tab");
                 return false;
             }
         }

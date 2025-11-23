@@ -221,31 +221,62 @@ namespace Loupedeck.ResearchAidPlugin
 
         protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
         {
-            using (var bitmapBuilder = new BitmapBuilder(imageSize))
+            try
             {
-                // Set background color based on status
-                var bgColor = this._status switch
+                var resourceName = PluginResources.FindFile("IconCompileAndShowLogsCommand.png");
+                var iconImage = PluginResources.ReadImage(resourceName);
+                
+                using (var bitmapBuilder = new BitmapBuilder(imageSize))
                 {
-                    CompileStatus.Compiling => new BitmapColor(255, 165, 0), // Orange
-                    CompileStatus.Success => new BitmapColor(0, 200, 0),     // Green
-                    CompileStatus.Error => new BitmapColor(200, 0, 0),       // Red
-                    _ => BitmapColor.Black
-                };
+                    // Set background color based on status
+                    var bgColor = this._status switch
+                    {
+                        CompileStatus.Compiling => new BitmapColor(255, 165, 0), // Orange
+                        CompileStatus.Success => new BitmapColor(0, 200, 0),     // Green
+                        CompileStatus.Error => new BitmapColor(200, 0, 0),       // Red
+                        _ => BitmapColor.Black
+                    };
 
-                bitmapBuilder.Clear(bgColor);
+                    bitmapBuilder.Clear(bgColor);
+                    
+                    // Draw the icon on top of the background
+                    if (iconImage != null)
+                    {
+                        bitmapBuilder.DrawImage(iconImage);
+                    }
 
-                // Add text
-                var text = this._status switch
+                    return bitmapBuilder.ToImage();
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error($"CompileAndShowLogsCommand: Failed to load icon - {ex.Message}");
+                
+                // Fallback to original text-based approach
+                using (var bitmapBuilder = new BitmapBuilder(imageSize))
                 {
-                    CompileStatus.Compiling => "Compiling...",
-                    CompileStatus.Success => "Success!",
-                    CompileStatus.Error => "Error!",
-                    _ => "Compile\n& Logs"
-                };
+                    var bgColor = this._status switch
+                    {
+                        CompileStatus.Compiling => new BitmapColor(255, 165, 0),
+                        CompileStatus.Success => new BitmapColor(0, 200, 0),
+                        CompileStatus.Error => new BitmapColor(200, 0, 0),
+                        _ => BitmapColor.Black
+                    };
 
-                bitmapBuilder.DrawText(text, BitmapColor.White);
+                    bitmapBuilder.Clear(bgColor);
 
-                return bitmapBuilder.ToImage();
+                    var text = this._status switch
+                    {
+                        CompileStatus.Compiling => "Compiling...",
+                        CompileStatus.Success => "Success!",
+                        CompileStatus.Error => "Error!",
+                        _ => "Compile\\n& Logs"
+                    };
+
+                    bitmapBuilder.DrawText(text, BitmapColor.White);
+
+                    return bitmapBuilder.ToImage();
+                }
             }
         }
 

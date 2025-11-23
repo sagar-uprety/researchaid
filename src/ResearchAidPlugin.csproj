@@ -32,6 +32,17 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="images\IconCitationCommand.png" />
+    <EmbeddedResource Include="images\IconOverleafPasteCommand.png" />
+    <EmbeddedResource Include="images\IconQuickNotesCommand.png" />
+    <EmbeddedResource Include="images\IconAnalyzePaperCommand.png" />
+    <EmbeddedResource Include="images\IconAskGeminiForFixCommand.png" />
+    <EmbeddedResource Include="images\IconCompileAndShowLogsCommand.png" />
+    <EmbeddedResource Include="images\IconToggleLogsCommand.png" />
+    <EmbeddedResource Include="images\IconOpenOverleafCommand.png" />
+  </ItemGroup>
+
   <Target Name="CopyPackage" AfterTargets="PostBuildEvent">
     <Message Text="📦 Copying package files..." Importance="High" />
     <ItemGroup>
