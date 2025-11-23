@@ -15,6 +15,46 @@ namespace Loupedeck.ResearchAidPlugin
         {
         }
 
+        protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
+        {
+            try
+            {
+                var resourceName = PluginResources.FindFile("IconCitationCommand.png");
+                var iconImage = PluginResources.ReadImage(resourceName);
+                
+                if (iconImage != null)
+                {
+                    // Draw the icon on a proper background
+                    using (var bitmapBuilder = new BitmapBuilder(imageSize))
+                    {
+                        bitmapBuilder.Clear(BitmapColor.Black);
+                        bitmapBuilder.DrawImage(iconImage);
+                        return bitmapBuilder.ToImage();
+                    }
+                }
+                
+                PluginLog.Warning("CitationCommand: Icon loaded but is null");
+                return null;
+            }
+            catch (FileNotFoundException ex)
+            {
+                PluginLog.Error($"CitationCommand: Icon file not found - {ex.Message}");
+                
+                // Fallback: Create a simple text-based button
+                using (var bitmapBuilder = new BitmapBuilder(imageSize))
+                {
+                    bitmapBuilder.Clear(BitmapColor.Black);
+                    bitmapBuilder.DrawText("DOI", BitmapColor.White);
+                    return bitmapBuilder.ToImage();
+                }
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error($"CitationCommand: Failed to load icon - {ex.Message}");
+                return null;
+            }
+        }
+
         protected override void RunCommand(String actionParameter)
         {
             try

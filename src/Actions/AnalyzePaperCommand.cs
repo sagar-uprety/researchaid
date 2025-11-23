@@ -13,6 +13,32 @@ namespace Loupedeck.ResearchAidPlugin
         {
         }
 
+        protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
+        {
+            try
+            {
+                var resourceName = PluginResources.FindFile("IconAnalyzePaperCommand.png");
+                var iconImage = PluginResources.ReadImage(resourceName);
+                
+                if (iconImage != null)
+                {
+                    using (var bitmapBuilder = new BitmapBuilder(imageSize))
+                    {
+                        bitmapBuilder.Clear(BitmapColor.Black);
+                        bitmapBuilder.DrawImage(iconImage);
+                        return bitmapBuilder.ToImage();
+                    }
+                }
+                
+                return null;
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error($"AnalyzePaperCommand: Failed to load icon - {ex.Message}");
+                return null;
+            }
+        }
+
         protected override void RunCommand(String actionParameter)
         {
             PluginLog.Info("AnalyzePaperCommand: Opening AI web UIs");

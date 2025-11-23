@@ -14,6 +14,32 @@ namespace Loupedeck.ResearchAidPlugin
         {
         }
 
+        protected override BitmapImage GetCommandImage(String actionParameter, PluginImageSize imageSize)
+        {
+            try
+            {
+                var resourceName = PluginResources.FindFile("IconOverleafPasteCommand.png");
+                var iconImage = PluginResources.ReadImage(resourceName);
+                
+                if (iconImage != null)
+                {
+                    using (var bitmapBuilder = new BitmapBuilder(imageSize))
+                    {
+                        bitmapBuilder.Clear(BitmapColor.Black);
+                        bitmapBuilder.DrawImage(iconImage);
+                        return bitmapBuilder.ToImage();
+                    }
+                }
+                
+                return null;
+            }
+            catch (Exception ex)
+            {
+                PluginLog.Error($"OverleafPasteCommand: Failed to load icon - {ex.Message}");
+                return null;
+            }
+        }
+
         protected override void RunCommand(String actionParameter)
         {
             try
