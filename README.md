@@ -56,7 +56,7 @@ We built ResearchAid using C# and the **Logi Actions SDK** (.NET 8.0), leveragin
 *   **AI Response Integration**: Streaming Gemini's generated fixes directly into the editor required careful clipboard management and typing simulation to avoid race conditions
 
 ## Accomplishments that we're proud of
-*   **27 Specialized Commands**: Built a comprehensive suite covering LaTeX editing, spell checking, version control, AI assistance, and workspace management
+*   **Specialized Commands**: Built a comprehensive suite covering LaTeX editing, spell checking, version control, AI assistance, and workspace management
 *   **Physical-Digital Bridge**: Successfully transformed standard input devices into a specialized research cockpit with tactile feedback for cloud-based editing
 *   **Real-time Table Generator**: The dynamic table builder with live dimension adjustment feels incredibly natural—twist the dials and watch your table structure update
 *   **AI Agent Integration**: The "Ask Gemini for Fix" feature delivers a magical experience—watching the plugin read errors, analyze them, and type solutions in real-time is a genuine productivity multiplier
